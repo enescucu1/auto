@@ -1,0 +1,43 @@
+@startuml ER Diagramm
+
+hide circle
+skinparam linetype ortho
+
+entity "Auto" {
+  * id: integer <<generated>>
+  --
+  * version: integer
+  * fgnr: text <<unique>>
+    art: autoart
+  * preis: decimal(10,2)
+  * rabatt: smallint
+  * lieferbar: boolean
+    datum: date
+    schlagwoerter: json
+  * erzeugt: timestamp
+  * aktualisiert: timestamp
+}
+
+entity "Modell" {
+  * id: integer <<generated>>
+  --
+  * modell: text
+  * **auto_id**: integer <<FK>> <<unique>>
+}
+
+entity "Bild" {
+  * id: integer <<generated>>
+  --
+  * beschriftung: text
+  * content_type: text
+  * **auto_id**: integer <<FK>>
+}
+
+' Beziehungen (aus schema.prisma abgeleitet)
+' Auto 1 — 0..* Bild
+Auto ||..o{ Bild
+
+' Auto 1 — 0..1 Modell (weil auto.modell? optional, aber modell.auto_id unique)
+Auto |o..|| Modell
+
+@enduml

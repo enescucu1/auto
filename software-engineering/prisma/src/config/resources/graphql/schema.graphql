@@ -1,0 +1,136 @@
+# Copyright (C) 2021 - present Juergen Zimmermann, Hochschule Karlsruhe
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"Funktionen, um Autodaten zu lesen"
+type Query {
+  autos(suchparameter: SuchparameterInput): [Auto!]
+
+  auto(id: ID!): Auto
+}
+
+"Funktionen, um Autos neu anzulegen, zu aktualisieren oder zu löschen"
+type Mutation {
+  create(input: AutoInput!): CreatePayload
+
+  update(input: AutoUpdateInput!): UpdatePayload
+
+  delete(id: ID!): DeletePayload
+
+  token(username: String!, password: String!): TokenPayload
+  refresh(refreshToken: String!): TokenPayload
+}
+
+"Daten zum Modell eines Autos"
+type Modell {
+  modell: String! # eslint-disable-line @graphql-eslint/no-typename-prefix
+}
+
+"Datenschema zu einem Auto, das gelesen wird"
+type Auto {
+  id: ID!            # ID ist bei Apollo ein String
+  version: Int!
+  fgnr: String!
+  art: Art
+  preis: Float!
+  rabatt(short: Boolean): String! # field mit @ResolveField (z.B. '10 %')
+  lieferbar: Boolean
+  datum: String
+  schlagwoerter: [String]
+  modell: Modell!   # 1:1-Beziehung
+}
+
+"Enum-Typ für die Art eines Autos"
+enum Art {
+  COUPE
+  LIMO
+  KOMBI
+}
+
+"Suchparameter für Autos"
+input SuchparameterInput {
+  fgnr: String
+  art: Art
+  preis: Float
+  rabatt: Int
+  lieferbar: Boolean
+  datum: String
+  schlagwort: String
+  modell: String
+}
+
+"Daten zum Modell eines neuen Autos"
+input ModellInput {
+  modell: String!
+}
+
+"Daten zu den Bildern eines Autos"
+input BildInput {
+  beschriftung: String!
+  contentType: String!
+}
+
+"Daten für ein neues Auto"
+input AutoInput {
+  fgnr: String
+  art: Art
+  preis: Float
+  rabatt: Int
+  lieferbar: Boolean
+  datum: String
+  schlagwoerter: [String]
+  modell: ModellInput!
+  bilder: [BildInput!]
+}
+
+"Generierte ID bei erfolgreichem Neuanlegen"
+type CreatePayload {
+  id: ID
+}
+
+"Daten für ein zu änderndes Auto"
+input AutoUpdateInput {
+  id: ID
+  version: Int
+  fgnr: String
+  art: Art
+  preis: Float
+  rabatt: Int
+  lieferbar: Boolean
+  datum: String
+  schlagwoerter: [String]
+}
+
+"Neue Versionsnummer als Resultat bei erfolgreichem Aktualisieren"
+type UpdatePayload {
+  version: Int
+}
+
+"Flag, ob das Loeschen durchgefuehrt wurde"
+type DeletePayload {
+  success: Boolean
+}
+
+"Access- und Refresh-Token einschliesslich Ablauf-Zeitstempel"
+type TokenPayload {
+  access_token: String!        # eslint-disable-line @graphql-eslint/naming-convention
+  expires_in: Int!             # eslint-disable-line @graphql-eslint/naming-convention
+  refresh_token: String!       # eslint-disable-line @graphql-eslint/naming-convention
+  refresh_expires_in: Int!     # eslint-disable-line @graphql-eslint/naming-convention
+}
